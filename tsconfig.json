@@ -1,0 +1,77 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "target": "ES6",
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@host/*": [
+        "./src/host/*"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@server/*": [
+        "./src/server/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@domains/*": [
+        "./domains/*"
+      ],
+      "@poc/module-ui": [
+        "./packages/module-ui/src/index.ts"
+      ],
+      "@poc/platform-contracts": [
+        "./packages/platform-contracts/src/index.ts"
+      ],
+      "@poc/platform-contracts/endpoints": [
+        "./packages/platform-contracts/src/endpoints.ts"
+      ],
+      "@poc/platform-contracts/errors": [
+        "./packages/platform-contracts/src/errors.ts"
+      ],
+      "@poc/platform-contracts/schemas": [
+        "./packages/platform-contracts/src/schemas.ts"
+      ],
+      "@poc/platform-client": [
+        "./packages/platform-client/src/index.ts"
+      ],
+      "@poc/tokens": [
+        "./packages/tokens/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

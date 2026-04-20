@@ -1,0 +1,165 @@
+// =============================================================================
+// Prisma Schema — POC Host + Manifest + Registry (v3)
+// -----------------------------------------------------------------------------
+// v3 separa três centros de verdade:
+//   1) Manifest — técnico (no código, não no banco)
+//   2) Catálogo — administrável (ModuleCatalogEntry / FeatureCatalogEntry)
+//   3) Escolha do usuário — experiência (UserModuleSelection / UserDashboardItem)
+// ModulePreference permanece APENAS para feature-flags administráveis.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// v3 — Usuário demo (singleton). Evita "invisible state".
+// -----------------------------------------------------------------------------
+model DemoUser {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  onboarding      UserOnboardingState?
+  moduleSelection UserModuleSelection[]
+  dashboard       UserDashboardItem[]
+}
+
+model UserOnboardingState {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  completed   Boolean  @default(false)
+  currentStep Int      @default(1)
+  // JSON: { intent: "pessoal" | "time" | "operacao" | "explorar", ... }
+  payloadJson String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user DemoUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -----------------------------------------------------------------------------
+// v3 — Catálogo da plataforma. Decidido pelo admin, não pelo código.
+// -----------------------------------------------------------------------------
+model ModuleCatalogEntry {
+  id                   String   @id @default(cuid())
+  moduleId             String   @unique
+  pricingModel         String   @default("free") // free | paid | internal
+  priceCents           Int?
+  globallyEnabled      Boolean  @default(true)
+  visibleInOnboarding  Boolean  @default(true)
+  visibleInDashboard   Boolean  @default(true)
+  featureFlagged       Boolean  @default(false)
+  displayOrder         Int      @default(0)
+  metadataJson         String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model FeatureCatalogEntry {
+  id                   String   @id @default(cuid())
+  moduleId             String
+  featureKey           String
+  label                String
+  description          String?
+  defaultValue         Boolean  @default(false)
+  enabled              Boolean  @default(true)
+  priceCents           Int?
+  visibleInOnboarding  Boolean  @default(false)
+  visibleInDashboard   Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([moduleId, featureKey])
+}
+
+// -----------------------------------------------------------------------------
+// v3 — Escolhas do usuário
+// -----------------------------------------------------------------------------
+model UserModuleSelection {
+  id                 String   @id @default(cuid())
+  userId             String
+  moduleId           String
+  selected           Boolean  @default(false)
+  pinned             Boolean  @default(false)
+  chosenInOnboarding Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user DemoUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model UserDashboardItem {
+  id               String   @id @default(cuid())
+  userId           String
+  moduleId         String
+  // Tipo da contribution do manifest: "dashboard-widget" | "dashboard-kpi" | "quick-action"
+  contributionKind String
+  // Key única dentro do módulo
+  contributionKey  String
+  order            Int      @default(0)
+  visible          Boolean  @default(true)
+  settingsJson     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user DemoUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, contributionKind, contributionKey])
+}
+
+// -----------------------------------------------------------------------------
+// Host — runtime operacional. Em v3 carrega APENAS feature flags administráveis.
+// -----------------------------------------------------------------------------
+model ModulePreference {
+  id           String   @id @default(cuid())
+  moduleId     String   @unique
+  // mantido para não quebrar schema v2; v3 usa ModuleCatalogEntry.globallyEnabled
+  enabled      Boolean  @default(true)
+  order        Int      @default(0)
+  // JSON { "flag:<key>": boolean }
+  settingsJson String?
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+}
+
+// -----------------------------------------------------------------------------
+// Domínios de exemplo (v1/v2)
+// -----------------------------------------------------------------------------
+model Note {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id           String   @id @default(cuid())
+  title        String
+  status       String   @default("todo") // todo | doing | done
+  sourceNoteId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sourceNoteId])
+}
+
+model CatalogItem {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  description String
+  category    String
+  priceCents  Int
+  createdAt   DateTime @default(now())
+}

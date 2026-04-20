@@ -1,0 +1,1 @@
+export { controlCenterManifest } from "./manifest"

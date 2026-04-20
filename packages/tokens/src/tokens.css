@@ -1,0 +1,17 @@
+/*
+ * @poc/tokens — tokens CSS da plataforma.
+ *
+ * Importado 1x em app/globals.css.
+ * Valores são derivados do tema shadcn já existente para evitar duplicação.
+ */
+:root {
+  --platform-surface-elevated: color-mix(in oklch, var(--card) 96%, var(--foreground) 4%);
+  --platform-surface-subtle: color-mix(in oklch, var(--background) 94%, var(--foreground) 6%);
+  --platform-surface-api: color-mix(in oklch, var(--background) 92%, var(--primary) 8%);
+
+  --platform-accent-catalog: var(--primary);
+  --platform-accent-flag: var(--accent-foreground);
+  --platform-accent-api: var(--primary);
+
+  --platform-radius-launcher: calc(var(--radius) + 0.25rem);
+}
